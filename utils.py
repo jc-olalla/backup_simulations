@@ -24,12 +24,21 @@ def _rotate_points(xy_array, alpha_degrees):
     ])
     return xy_array @ rotation_matrix.T  # Transpose for correct orientation
 
-def rotate_points(df, alpha_degrees):
+def rotate_points(df, alpha_degrees, x_ref=0.0, y_ref=0.0):
+    # Step 1: Translate points to origin
     xy_array = df[['x', 'y']].to_numpy()
-    xy_array_rot = _rotate_points(xy_array, alpha_degrees)
-    df.x = xy_array_rot[:, 0]
-    df.y = xy_array_rot[:, 1]
-    return df
+    xy_centered = xy_array - np.array([x_ref, y_ref])
 
+    # Step 2: Rotate
+    xy_rotated = _rotate_points(xy_centered, alpha_degrees)
+
+    # Step 3: Translate back
+    xy_final = xy_rotated + np.array([x_ref, y_ref])
+
+    # Update dataframe
+    df['x'] = xy_final[:, 0]
+    df['y'] = xy_final[:, 1]
+
+    return df
 
 

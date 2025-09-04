@@ -5,7 +5,7 @@ import os
 import matplotlib.pyplot as plt
 from rdp import rdp
 
-def compute_alpha_pointwise(Re, alpha, previous_alpha, root_path, profile_name):
+def compute_alpha_pointwise(Re, alpha, previous_alpha, root_path, profile_name, actuator_disk=False):
     parallel_comp = True
     cp_plot = True
     force_plot = True
@@ -21,6 +21,15 @@ def compute_alpha_pointwise(Re, alpha, previous_alpha, root_path, profile_name):
         subprocess.run(["cp", "-r", "openfoam_runs_pointwise/Base_AOA/constant", "openfoam_runs_pointwise/Base_AOA/system", "openfoam_runs_pointwise/AOA_" + str(alpha)])    # Copying Base_AOA folders and content to the last mentioned directory AOA
         subprocess.run(["cp", "-r", "openfoam_runs_pointwise/Base_AOA/polyMesh", "openfoam_runs_pointwise/AOA_" + str(alpha) + "/constant"]) # Copies mesh and places it in the last mentioned directory
         subprocess.run(["cp", "-r", "openfoam_runs_pointwise/Base_AOA/0", "openfoam_runs_pointwise/AOA_" + str(alpha)])     # Copying Base_AOA/0 folderw and content to the last mentioned directory AOA
+
+        if actuator_disk:
+            subprocess.run(["topoSet"], cwd="openfoam_runs_pointwise/AOA_" + str(alpha))  # assign cell zones to actuator disk
+
+        else:
+            try:
+                subprocess.run(["rm", f"openfoam_runs_pointwise/AOA_{alpha}/constant/fvOptions"])
+            except:
+                pass
 
 
         ### Change AOA in includeDict  ###
@@ -61,6 +70,9 @@ def compute_alpha_pointwise(Re, alpha, previous_alpha, root_path, profile_name):
         else:
             subprocess.run(['simpleFoam > log'], shell=True, cwd="openfoam_runs_pointwise/AOA_" + str(alpha))
 
+
+        if actuator_disk:
+            subprocess.run(["foamToVTK"], cwd="openfoam_runs_pointwise/AOA_" + str(alpha))  # assign cell zones to actuator disk
 
     ### Unsteady sim ###
     if unsteady:
@@ -151,6 +163,8 @@ def compute_alpha_pointwise(Re, alpha, previous_alpha, root_path, profile_name):
 
 
 
+    ### Output velocities (added by Juan Tang)
+    subprocess.run(['postProcess -func velocities'], shell=True, cwd="openfoam_runs_pointwise/AOA_" + str(alpha))
     ### Output surfaces postProcess ###
     subprocess.run(['postProcess -func surfaces'], shell=True, cwd="openfoam_runs_pointwise/AOA_" + str(alpha))
 

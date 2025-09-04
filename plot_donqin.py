@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 
 
-def plot_donqin_airfoil(df_all, output_path, show=False):
+def plot_donqin_airfoil(df_all, output_path, show=False, return_plot=False):
     # Plot
     fig = plt.figure(figsize=(16, 6.5))
     ax = fig.add_subplot(111)
@@ -28,6 +28,9 @@ def plot_donqin_airfoil(df_all, output_path, show=False):
     ax.set_xlim(-0.05, 1.05)  # same as LEI
     ax.set_aspect('equal', adjustable='box')
     fig.suptitle('Donqin duct')
+
+    if return_plot:
+        return fig, ax
 
     # Write
     fig.savefig(output_path, dpi=600)
